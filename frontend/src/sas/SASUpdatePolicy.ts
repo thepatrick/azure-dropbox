@@ -1,18 +1,18 @@
 import {
   BaseRequestPolicy,
-
   RequestPolicy,
   RequestPolicyOptions,
-  HttpOperationResponse
-} from "@azure/storage-blob";
-import { SASStore } from "./SASStore";
+  HttpOperationResponse,
+  WebResource,
+} from '@azure/storage-blob';
+import { SASStore } from './SASStore';
 
 export class SASUpdatePolicy extends BaseRequestPolicy {
   constructor(nextPolicy: RequestPolicy, options: RequestPolicyOptions, private sasStore: SASStore) {
     super(nextPolicy, options);
   }
 
-  async sendRequest(request): Promise<HttpOperationResponse> {
+  async sendRequest(request: WebResource): Promise<HttpOperationResponse> {
     const urlObj = new URL(request.url);
     const sas = await this.sasStore.getValidSASForBlob(`${urlObj.origin}${urlObj.pathname}`);
     new URL(`http://hostname${sas}`).searchParams.forEach((value, key) => {
