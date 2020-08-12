@@ -5,7 +5,7 @@
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "AZURE_STORAGE_ACCOUNT_NAME": "your-storage-account-name",
     "AZURE_STORAGE_ACCOUNT_ACCESS_KEY": "your-storage-account-access-key",
-    "UPLOADER_JWT_PRIVATE_KEY": "generate-64-bytes-or-more-of-gibberish-here",
+    "UPLOADER_JWT_PRIVATE_KEY": "geneate this yourself using: openssl rand -base64 172 | tr -d '\n'",
     "UPLOADER_JWT_AUDIENCE": "your-video-uploader",
     "AZURE_STORAGE_CONTAINER": "your-storage-container"
   },
