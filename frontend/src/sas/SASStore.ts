@@ -5,7 +5,6 @@ export class SASStore {
 
   // Get a valid SAS for blob
   async getValidSASForBlob(blobURL: string): Promise<string> {
-    console.log('getValidSASForBlob', blobURL);
     const existingSAS = this.sasCache.get(blobURL);
     if (existingSAS && this.isSasStillValidInNext2Mins(existingSAS)) {
       return existingSAS;
@@ -18,7 +17,6 @@ export class SASStore {
 
   // Return true if "se" section in SAS is still valid in next 2 mins
   isSasStillValidInNext2Mins(sas: string): boolean {
-    console.log('isSasStillValidInNext2Mins', sas);
     const expiryStringInSas = new URL(`http://hostname${sas}`).searchParams.get('se');
     return new Date(expiryStringInSas).getTime() - Date.now() >= 2 * 60 * 1000;
   }

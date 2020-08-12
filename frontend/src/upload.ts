@@ -1,6 +1,9 @@
 import { AnonymousCredential, BlockBlobClient, newPipeline } from '@azure/storage-blob';
 import { SASStore } from './sas/SASStore';
 import { SASUpdatePolicyFactory } from './sas/SASUpdatePolicyFactory';
+import { ProgressBar } from './ProgressBar';
+import { SetHidden } from './setHidden';
+import { ShowAlert } from './createShowAlert';
 
 type UploadBlobDetails = { object: string; token: string };
 
@@ -24,7 +27,7 @@ const getUploadBlobDetails = async (
   return response.json() as Promise<UploadBlobDetails>;
 };
 
-export const upload = async (
+const upload = async (
   speakerName: string,
   talkTitle: string,
   file: File,
@@ -47,4 +50,28 @@ export const upload = async (
     maxSingleShotSize: 4 * 1024 * 1024,
     onProgress: ({ loadedBytes }) => onProgress(loadedBytes),
   });
+};
+
+export const createUploadFiles = (
+  progressBar: ProgressBar,
+  setFormBeingProcessed: SetHidden,
+  showAlert: ShowAlert,
+  setSpinnerHidden: SetHidden,
+) => async (file: File, speakerName: string, talkTitle: string): Promise<void> => {
+  try {
+    setSpinnerHidden(false);
+    progressBar.setHidden(false);
+    await upload(speakerName, talkTitle, file, (loadedBytes) => {
+      progressBar.setProgress((loadedBytes / file.size) * 100);
+    });
+    setSpinnerHidden(true);
+    progressBar.setHidden(true);
+
+    showAlert('Upload finished succesfully', 'success');
+  } catch (error) {
+    showAlert((error as Error).message, 'danger');
+    setFormBeingProcessed(false);
+    setSpinnerHidden(true);
+    progressBar.setHidden(true);
+  }
 };
