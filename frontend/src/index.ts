@@ -1,5 +1,12 @@
 import { upload } from './upload';
 
+// main.js
+import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.css'; // Import precompiled Bootstrap css
+import '@fortawesome/fontawesome-free/css/all.css';
+
+import './css/frontend.css';
+
 const speakerName = <HTMLInputElement>document.getElementById('speaker-name');
 const talkTitle = <HTMLInputElement>document.getElementById('talk-title');
 const selectButton = <HTMLInputElement>document.getElementById('select-button');

@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.14.0",
     "@typescript-eslint/eslint-plugin": "^3.8.0",
     "@typescript-eslint/parser": "^3.8.0",
     "eslint": "^7.6.0",
@@ -23,7 +24,10 @@
     "typescript": "^3.9.7"
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.2.0-preview.1"
+    "@azure/storage-blob": "^12.2.0-preview.1",
+    "bootstrap": "^4.5.2",
+    "jquery": "^3.5.1",
+    "popper.js": "^1.16.1"
   },
   "browserslist": [
     "last 1 Edge version",
