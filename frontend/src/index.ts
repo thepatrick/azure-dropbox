@@ -9,6 +9,7 @@ import { setHidden, SetHidden } from './setHidden';
 import { createUploadFiles } from './upload';
 
 document.addEventListener('DOMContentLoaded', () => {
+  const roomName = <HTMLSelectElement>document.getElementById('room-name');
   const speakerName = <HTMLInputElement>document.getElementById('speaker-name');
   const talkTitle = <HTMLInputElement>document.getElementById('talk-title');
   const fileInput = <HTMLInputElement>document.getElementById('file-input');
@@ -19,12 +20,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const setSpinnerHidden = setHidden(document.getElementById('upload-spinner'));
 
+  const setRoomHidden = setHidden(roomName.parentElement);
   const setSpeakerHidden = setHidden(speakerName.parentElement);
   const setTalkHidden = setHidden(talkTitle.parentElement);
   const setFileHidden = setHidden(fileInput.parentElement);
   const setSubmitHidden = setHidden(<HTMLInputElement>document.getElementById('submit-button'));
   const setFormBeingProcessed: SetHidden = (hidden: boolean) => {
-    [setSpeakerHidden, setTalkHidden, setFileHidden, setSubmitHidden].forEach((setElHidden) => setElHidden(hidden));
+    [setRoomHidden, setSpeakerHidden, setTalkHidden, setFileHidden, setSubmitHidden].forEach((setElHidden) =>
+      setElHidden(hidden),
+    );
   };
 
   const uploadFiles = createUploadFiles(progressBar, setFormBeingProcessed, showAlert, setSpinnerHidden);
@@ -43,11 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setFormBeingProcessed(true);
 
+    const roomNameTrimmed = roomName.value.trim();
     const speakerNameTrimmed = speakerName.value.trim();
     const talkTitleTrimmed = talkTitle.value.trim();
     const file = fileInput.files[0];
 
-    await uploadFiles(file, speakerNameTrimmed, talkTitleTrimmed);
+    await uploadFiles(file, roomNameTrimmed, speakerNameTrimmed, talkTitleTrimmed);
   };
 
   formEl.addEventListener(

@@ -8,6 +8,7 @@ import { ShowAlert } from './createShowAlert';
 type UploadBlobDetails = { object: string; token: string };
 
 const getUploadBlobDetails = async (
+  roomName: string,
   speakerName: string,
   talkTitle: string,
   fileName: string,
@@ -15,6 +16,7 @@ const getUploadBlobDetails = async (
   const response = await fetch(`${process.env.UPLOAD_API_SERVER}/begin`, {
     method: 'POST',
     body: JSON.stringify({
+      room: roomName,
       speaker: speakerName,
       talk: talkTitle,
       name: fileName,
@@ -27,13 +29,20 @@ const getUploadBlobDetails = async (
   return response.json() as Promise<UploadBlobDetails>;
 };
 
+type GetDownloadLink = () => Promise<string>;
+
+const getDownloadURL = (sasStore: SASStore, object: string): GetDownloadLink => async () => {
+  return `${object}${await sasStore.getValidSASForBlob(object)}`;
+};
+
 const upload = async (
+  roomName: string,
   speakerName: string,
   talkTitle: string,
   file: File,
   onProgress: (loadedBytes: number) => void,
-): Promise<void> => {
-  const { object, token } = await getUploadBlobDetails(speakerName, talkTitle, file.name);
+): Promise<GetDownloadLink> => {
+  const { object, token } = await getUploadBlobDetails(roomName, speakerName, talkTitle, file.name);
 
   const sasStore = new SASStore(token);
 
@@ -50,6 +59,8 @@ const upload = async (
     maxSingleShotSize: 4 * 1024 * 1024,
     onProgress: ({ loadedBytes }) => onProgress(loadedBytes),
   });
+
+  return getDownloadURL(sasStore, object);
 };
 
 export const createUploadFiles = (
@@ -57,11 +68,11 @@ export const createUploadFiles = (
   setFormBeingProcessed: SetHidden,
   showAlert: ShowAlert,
   setSpinnerHidden: SetHidden,
-) => async (file: File, speakerName: string, talkTitle: string): Promise<void> => {
+) => async (file: File, roomName: string, speakerName: string, talkTitle: string): Promise<void> => {
   try {
     setSpinnerHidden(false);
     progressBar.setHidden(false);
-    await upload(speakerName, talkTitle, file, (loadedBytes) => {
+    const getDownloadLink = await upload(roomName, speakerName, talkTitle, file, (loadedBytes) => {
       progressBar.setProgress((loadedBytes / file.size) * 100);
     });
     setSpinnerHidden(true);
