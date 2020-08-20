@@ -72,6 +72,7 @@ const httpTrigger: AzureFunction = async function (context: Context, req: HttpRe
         blobName: objectName,
         permissions: BlobSASPermissions.parse('cw'), // r(ead), a(dd) c(reate) w(rite) d(elete) x(deleteVersion) t(ag)
         expiresOn: new Date(Date.now() + (60 * 5 * 1000)),
+        startsOn: new Date(Date.now() - (60 * 5 * 1000)),
       }, sharedKeyCredential).toString()
     })
   }
