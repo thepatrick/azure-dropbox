@@ -1,88 +1,66 @@
-import { AnonymousCredential, BlockBlobClient, newPipeline } from '@azure/storage-blob';
-import { SASStore } from './sas/SASStore';
-import { SASUpdatePolicyFactory } from './sas/SASUpdatePolicyFactory';
-import { ProgressBar } from './ProgressBar';
-import { SetHidden } from './setHidden';
-import { ShowAlert } from './createShowAlert';
+import { getUploadId } from './getUploadId';
+import { getPartSignedURLs } from './getPartSignedURLs';
+import { abandonUpload } from './abandonUpload';
+import { completeUpload } from './completeUpload';
+import { uploadPart } from './uploadPart';
+import { getSlice } from './getSlice';
+import { PartProgress } from './types';
 
-type UploadBlobDetails = { object: string; token: string };
+import pLimit from 'p-limit';
 
-const getUploadBlobDetails = async (
-  roomName: string,
-  speakerName: string,
-  talkTitle: string,
-  fileName: string,
-): Promise<UploadBlobDetails> => {
-  const response = await fetch(`${process.env.UPLOAD_API_SERVER}/begin`, {
-    method: 'POST',
-    body: JSON.stringify({
-      room: roomName,
-      speaker: speakerName,
-      talk: talkTitle,
-      name: fileName,
-    }),
-    headers: {
-      'content-type': 'application/json',
-    },
-  });
+const FILE_CHUNK_SIZE = 10_000_000;
 
-  return response.json() as Promise<UploadBlobDetails>;
-};
+const calculateProgress = (allParts: { uploadedBytes: number }[]): number =>
+  allParts.reduce((prev, curr) => prev + curr.uploadedBytes, 0);
 
-type GetDownloadLink = () => Promise<string>;
-
-const getDownloadURL = (sasStore: SASStore, object: string): GetDownloadLink => async () => {
-  return `${object}${await sasStore.getValidSASForBlob(object)}`;
-};
-
-const upload = async (
+export const upload = async (
   roomName: string,
   speakerName: string,
   talkTitle: string,
   file: File,
   onProgress: (loadedBytes: number) => void,
-): Promise<GetDownloadLink> => {
-  const { object, token } = await getUploadBlobDetails(roomName, speakerName, talkTitle, file.name);
+): Promise<void> => {
+  const { uploadId } = await getUploadId(roomName, speakerName, talkTitle, file.name);
 
-  const sasStore = new SASStore(token);
+  const partCounts = Math.ceil(file.size / FILE_CHUNK_SIZE);
 
-  const pipeline = newPipeline(new AnonymousCredential());
-  // Inject SAS update policy factory into current pipeline
-  pipeline.factories.unshift(new SASUpdatePolicyFactory(sasStore));
+  const { signedURLs } = await getPartSignedURLs(uploadId, partCounts);
+  console.log('signedURLs', signedURLs);
 
-  const blockBlobClient = new BlockBlobClient(
-    `${object}${await sasStore.getValidSASForBlob(object)}`, // A SAS should start with "?"
-    pipeline,
-  );
+  const promises = [];
+  const partProgress: PartProgress[] = [];
 
-  await blockBlobClient.uploadBrowserData(file, {
-    maxSingleShotSize: 4 * 1024 * 1024,
-    onProgress: ({ loadedBytes }) => onProgress(loadedBytes),
-  });
+  const limit = pLimit(4);
 
-  return getDownloadURL(sasStore, object);
-};
+  for (let i = 0; i < partCounts; i++) {
+    const part = i;
+    const slice = getSlice(file, i * FILE_CHUNK_SIZE, (part + 1) * FILE_CHUNK_SIZE);
 
-export const createUploadFiles = (
-  progressBar: ProgressBar,
-  setFormBeingProcessed: SetHidden,
-  showAlert: ShowAlert,
-  setSpinnerHidden: SetHidden,
-) => async (file: File, roomName: string, speakerName: string, talkTitle: string): Promise<void> => {
+    partProgress[part] = { uploadedBytes: 0, ofBytes: slice.size, state: 'pending' };
+
+    console.log('Pushing slice', part, slice.size, slice);
+
+    promises.push(
+      limit(() =>
+        uploadPart(slice, part, signedURLs[i], (loadedBytes) => {
+          partProgress[part].uploadedBytes = loadedBytes;
+
+          const totalProgress = calculateProgress(partProgress);
+
+          // console.log('Part', part, loadedBytes, JSON.stringify(partProgress), totalProgress);
+
+          onProgress(totalProgress);
+        }),
+      ),
+    );
+  }
+
   try {
-    setSpinnerHidden(false);
-    progressBar.setHidden(false);
-    const getDownloadLink = await upload(roomName, speakerName, talkTitle, file, (loadedBytes) => {
-      progressBar.setProgress((loadedBytes / file.size) * 100);
-    });
-    setSpinnerHidden(true);
-    progressBar.setHidden(true);
-
-    showAlert('Upload finished succesfully', 'success');
-  } catch (error) {
-    showAlert((error as Error).message, 'danger');
-    setFormBeingProcessed(false);
-    setSpinnerHidden(true);
-    progressBar.setHidden(true);
+    const completedParts = await Promise.all(promises);
+    console.log('completedParts', completedParts);
+    await completeUpload(uploadId, completedParts);
+  } catch (err) {
+    console.log('Abandoning because', err);
+    await abandonUpload(uploadId);
   }
 };

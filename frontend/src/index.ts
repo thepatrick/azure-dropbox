@@ -1,12 +1,14 @@
-import '@fortawesome/fontawesome-free/css/all.css';
 // main.js
+
+import '@fortawesome/fontawesome-free/css/all.css';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.css'; // Import precompiled Bootstrap css
-import { createShowAlert } from './createShowAlert';
 import './css/frontend.css';
+
+import { createShowAlert } from './createShowAlert';
 import { createProgressBar } from './ProgressBar';
 import { setHidden, SetHidden } from './setHidden';
-import { createUploadFiles } from './upload';
+import { createUploadFile } from './createUploadFile';
 
 document.addEventListener('DOMContentLoaded', () => {
   const roomName = <HTMLSelectElement>document.getElementById('room-name');
@@ -31,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     );
   };
 
-  const uploadFiles = createUploadFiles(progressBar, setFormBeingProcessed, showAlert, setSpinnerHidden);
+  const uploadFiles = createUploadFile(progressBar, setFormBeingProcessed, showAlert, setSpinnerHidden);
 
   fileInput.addEventListener('change', () => {
     if (fileInput.files.length > 0) {
