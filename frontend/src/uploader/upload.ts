@@ -1,12 +1,12 @@
-import { getUploadId } from './getUploadId';
-import { getPartSignedURLs } from './getPartSignedURLs';
-import { abandonUpload } from './abandonUpload';
-import { completeUpload } from './completeUpload';
 import { uploadPart } from './uploadPart';
 import { getSlice } from './getSlice';
-import { PartProgress } from './types';
+
+export interface PartProgress {
+  uploadedBytes: number;
+}
 
 import pLimit from 'p-limit';
+import { abandonUpload, completeUpload, getPartSignedURLs, getUploadId } from './apiCalls';
 
 const FILE_CHUNK_SIZE = 10_000_000;
 
@@ -20,12 +20,10 @@ export const upload = async (
   file: File,
   onProgress: (loadedBytes: number) => void,
 ): Promise<void> => {
-  const { uploadId } = await getUploadId(roomName, speakerName, talkTitle, file.name);
-
   const partCounts = Math.ceil(file.size / FILE_CHUNK_SIZE);
 
+  const { uploadId } = await getUploadId(roomName, speakerName, talkTitle, file.name);
   const { signedURLs } = await getPartSignedURLs(uploadId, partCounts);
-  console.log('signedURLs', signedURLs);
 
   const promises = [];
   const partProgress: PartProgress[] = [];
@@ -34,24 +32,23 @@ export const upload = async (
 
   for (let i = 0; i < partCounts; i++) {
     const part = i;
-    const slice = getSlice(file, i * FILE_CHUNK_SIZE, (part + 1) * FILE_CHUNK_SIZE);
 
-    partProgress[part] = { uploadedBytes: 0, ofBytes: slice.size, state: 'pending' };
-
-    console.log('Pushing slice', part, slice.size, slice);
+    partProgress[part] = { uploadedBytes: 0 };
 
     promises.push(
-      limit(() =>
-        uploadPart(slice, part, signedURLs[i], (loadedBytes) => {
+      limit(() => {
+        const slice = getSlice(file, i * FILE_CHUNK_SIZE, (part + 1) * FILE_CHUNK_SIZE);
+
+        console.log('Starting slice', part, slice.size, slice);
+
+        return uploadPart(slice, part, signedURLs[i], (loadedBytes) => {
           partProgress[part].uploadedBytes = loadedBytes;
 
           const totalProgress = calculateProgress(partProgress);
 
-          // console.log('Part', part, loadedBytes, JSON.stringify(partProgress), totalProgress);
-
           onProgress(totalProgress);
-        }),
-      ),
+        });
+      }),
     );
   }
 

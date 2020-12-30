@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Part } from './types';
+import { Part } from './apiCalls';
 
 export const uploadPart = async (
   blob: Blob,

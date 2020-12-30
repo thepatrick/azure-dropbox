@@ -1,7 +1,7 @@
 import { ProgressBar } from './ProgressBar';
 import { SetHidden } from './setHidden';
 import { ShowAlert } from './createShowAlert';
-import { upload } from './upload';
+import { upload } from './uploader/upload';
 
 export const createUploadFile = (
   progressBar: ProgressBar,
