@@ -1,0 +1,37 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Creates a bucket to store uploaded files"
+
+Resources:
+  VideoUploads:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      AccelerateConfiguration:
+        AccelerationStatus: "Enabled"
+      AccessControl: "Private"
+      LifecycleConfiguration:
+        Rules:
+        - AbortIncompleteMultipartUpload:
+            DaysAfterInitiation: 2
+          Status: "Enabled"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ["*"]
+            AllowedMethods:
+            - "HEAD"
+            - "GET"
+            - "PUT"
+            - "POST"
+            AllowedOrigins: ["*"]
+            ExposedHeaders:
+            - "etag"
+
+Outputs:
+  AcceleratedEndpoint:
+    Value: !Sub "${VideoUploads}.s3-accelerate.amazonaws.com"

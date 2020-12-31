@@ -8,12 +8,13 @@ export const createUploadFile = (
   setFormBeingProcessed: SetHidden,
   showAlert: ShowAlert,
   setSpinnerHidden: SetHidden,
-) => async (file: File, roomName: string, speakerName: string, talkTitle: string): Promise<void> => {
+  token: string,
+) => async (file: File, presentationTitle: string): Promise<void> => {
   try {
     setSpinnerHidden(false);
     progressBar.setHidden(false);
 
-    await upload(roomName, speakerName, talkTitle, file, (loadedBytes) => {
+    await upload(token, file, presentationTitle, (loadedBytes) => {
       console.log('Updating progress...', loadedBytes, file.size, (loadedBytes / file.size) * 100);
       progressBar.setProgress((loadedBytes / file.size) * 100);
     });

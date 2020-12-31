@@ -14,16 +14,15 @@ const calculateProgress = (allParts: { uploadedBytes: number }[]): number =>
   allParts.reduce((prev, curr) => prev + curr.uploadedBytes, 0);
 
 export const upload = async (
-  roomName: string,
-  speakerName: string,
-  talkTitle: string,
+  token: string,
   file: File,
+  presentationTitle: string,
   onProgress: (loadedBytes: number) => void,
 ): Promise<void> => {
   const partCounts = Math.ceil(file.size / FILE_CHUNK_SIZE);
 
-  const { uploadId } = await getUploadId(roomName, speakerName, talkTitle, file.name);
-  const { signedURLs } = await getPartSignedURLs(uploadId, partCounts);
+  const { token: uploadToken } = await getUploadId(token, file.name, presentationTitle);
+  const { signedURLs } = await getPartSignedURLs(uploadToken, partCounts);
 
   const promises = [];
   const partProgress: PartProgress[] = [];
@@ -55,9 +54,9 @@ export const upload = async (
   try {
     const completedParts = await Promise.all(promises);
     console.log('completedParts', completedParts);
-    await completeUpload(uploadId, completedParts);
+    await completeUpload(uploadToken, completedParts);
   } catch (err) {
     console.log('Abandoning because', err);
-    await abandonUpload(uploadId);
+    await abandonUpload(uploadToken);
   }
 };
