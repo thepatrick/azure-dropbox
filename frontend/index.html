@@ -1,4 +1,3 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html>
   <head>
@@ -9,28 +8,11 @@
     <form id="upload-form" class="form-signin bg-light border rounded shadow-sm" novalidate>
       <div class="text-center mb-4">
         <h1 class="display-4 mb-3 font-weight-normal">Upload Video</h1>
-        <h4 class="display-8 mb-3 font-weight-normal">Submissions have closed.  If you have not uploaded a video, you will be Live Streaming on the day.</h1>
+        <!-- <h4 class="display-8 mb-3 font-weight-normal">Submissions have closed.  If you have not uploaded a video, you will be Live Streaming on the day.</h1> -->
       </div>
 
       <div class="form-label-group">
-        <select id="room-name" class="custom-select custom-select-lg" required>
-          <option value="">Choose room</option>
-          <option>Science Data and Analytics</option>
-          <option>Security and Privacy and DjangoCon AU</option>
-          <option>Education</option>
-          <option>DevOops</option>         
-          <option>Curlyboi Theatre</option>
-          <option>Python 2 Memorial Concert Hall</option>
-          <option>Flip Floperator Auditorium</option>
-          <option>The One, Obvious Room</option>
-        </select>
-        <div class="invalid-feedback">
-          Please choose the room your talk is in.
-        </div>
-      </div>
-
-      <div class="form-label-group">
-        <input type="text" id="speaker-name" class="form-control" placeholder="Presenter name" required autofocus>
+        <input type="text" id="presenter-name" class="form-control" placeholder="Presenter name" required readonly>
         <label for="speaker-name">Presenter name</label>
         <div class="invalid-feedback">
           Please provide the name of at least one presenter.
@@ -38,7 +20,7 @@
       </div>
 
       <div class="form-label-group">
-        <input type="text" id="talk-title" class="form-control" placeholder="Talk title" required>
+        <input type="text" id="presentation-title" class="form-control" placeholder="Presentation title" required autofocus>
         <label for="talk-title">Presentation title</label>
         <div class="invalid-feedback">
           Please provide the name of the presentation.

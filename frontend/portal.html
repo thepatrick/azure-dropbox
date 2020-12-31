@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Video Uploader</title>
+  </head>
+
+  <body>
+    <div class="form-signin">
+      <div class="bg-light border rounded shadow-sm mb-4 p-3">
+        <div class="mb-4 text-center">
+          <h1 class="display-4 mb-3 font-weight-normal">Presenter Portal</h1>
+        </div>
+
+        <div class="mb-2">
+          <div class="small-label">Name</div>
+          <div>M. de Blanc</div>
+        </div>
+
+        <div class="mb-2">
+          <div class="small-label">Email</div>
+          <div>molly.deblanc@gmail.com</div>
+        </div>
+
+        <hr>
+
+        <a href="#" class="btn btn-link btn-block mt-2" id="submit-button">Tech Tips Video</a>
+        <a href="#" class="btn btn-link btn-block mt-2" id="submit-button">Speaker Guide</a>
+      </div>
+      <div class="bg-light border rounded shadow-sm mb-2 p-3">
+        <div class="alert alert-danger" role="alert">
+          It looks like you've had a Tech Check, but there are some things we'd really like you to fix. Please review the comments and book another Tech Check ASAP.
+        </div>
+
+        <hr>
+
+        <h4>Tech Check</h4>
+
+        <div class="mb-2">
+          <div class="small-label">Booked</div>
+          <div>2021-04-55 15:45PM (+9.5)</div>
+        </div>
+
+
+        <div>
+          <div class="small-label">Feedback</div>
+        </div>
+        <div class="card mb-2">
+          <div class="card-body">
+            <p class="card-text">
+              <pre>
+                1. Screen share is black with only a mouse cursor showing!  The presentation might need to run from a browser such as Google Doc.  (the test one you showed us worked well!)
+
+                2. Microphone is ok, but could potentially sound better with borrowed mic.
+
+                3. Be mindful without the natural light, you might just need to pop in a bedside lamp or similar (although bounce it off the wall if it's a direct light!)
+
+                Thanks!
+            </pre>
+            </p>
+          </div>
+        </div>
+
+        <div class="mb-2">
+          <a href="#" class="btn btn-danger btn-block" id="submit-button">Cancel Tech Check</a>
+          <a href="#" class="btn btn-primary btn-block mt-2" id="submit-button">Book Tech Check</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-signin">
+      <div class="bg-light border rounded shadow-sm mb-4 p-3">
+        <div class="mb-2">
+          <div class="small-label">Presentation</div>
+          <div>Introduction to Ethics from an Ethicist-in-Training</div>
+        </div>
+
+        <div class="mb-2">
+          <div class="small-label">Format</div>
+          <div>Live Streaming</div>
+        </div>
+
+        <div class="mb-2">
+          <a href="#" class="btn btn-dark btn-block mt-2" id="submit-button">I want to pre-record this presentation</a>
+        </div>
+      </div>
+
+      <div class="bg-light border rounded shadow-sm mb-4 p-3">
+        <div class="mb-2">
+          <div class="small-label">Presentation</div>
+          <div>Transparent Open Source AI Video Analytics with Panfrost</div>
+        </div>
+
+        <div class="mb-2">
+          <div class="small-label">Format</div>
+          <div>Pre-record</div>
+        </div>
+
+        <div class="mb-2">
+          <div class="small-label">Status</div>
+          <div>File Uploaded / Reviewed / Needs Changes</div>
+        </div>
+
+        <div class="mb-2">
+          <a href="#" class="btn btn-primary btn-block mt-2" id="submit-button">Upload this presentation</a>
+          <a href="#" class="btn btn-dark btn-block mt-2" id="submit-button">I want to live stream this presentation</a>
+        </div>
+      </div>
+
+    </div>
+
+    <form id="upload-form" class="form-signin bg-light border rounded shadow-sm" novalidate>
+
+      <h4>Pre-Record</h4>
+
+
+      <div class="mb-2">
+        <div class="small-label">Presentation</div>
+        <div>Transparent Open Source AI Video Analytics with Panfrost</div>
+      </div>
+
+      <div>
+        <div class="small-label">Upload</div>
+      </div>
+      <div class="custom-file mb-4 mt-2">
+        <input type="file" class="custom-file-input" id="file-input" required>
+        <label class="custom-file-label" for="customFile">Choose file</label>
+      </div>
+
+      <button class="btn btn-lg btn-primary btn-block" id="submit-button">Upload</button>
+
+      <div class="text-center mt-5 d-none" id="upload-spinner">
+        <div class="spinner-border text-primary" style="width: 6rem; height: 6rem;" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+      </div>
+
+      <div class="progress mt-5 d-none">
+        <div id="upload-progress" class="progress-bar" role="progressbar" style="width: 1%" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+      </div>
+
+    </form>
+
+    <script src="src/index.ts"></script>
+  </body>
+</html>

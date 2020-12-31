@@ -1,17 +1,20 @@
-import '@fortawesome/fontawesome-free/css/all.css';
 // main.js
+
+import '@fortawesome/fontawesome-free/css/all.css';
 import 'bootstrap';
 import 'bootstrap/dist/css/bootstrap.css'; // Import precompiled Bootstrap css
-import { createShowAlert } from './createShowAlert';
 import './css/frontend.css';
+
+import { createShowAlert } from './createShowAlert';
 import { createProgressBar } from './ProgressBar';
 import { setHidden, SetHidden } from './setHidden';
-import { createUploadFiles } from './upload';
+import { createUploadFile } from './createUploadFile';
+import { getPortalDetails } from './uploader/apiCalls';
 
-document.addEventListener('DOMContentLoaded', () => {
-  const roomName = <HTMLSelectElement>document.getElementById('room-name');
-  const speakerName = <HTMLInputElement>document.getElementById('speaker-name');
-  const talkTitle = <HTMLInputElement>document.getElementById('talk-title');
+const setup = async () => {
+  const presenterInput = <HTMLInputElement>document.getElementById('presenter-name');
+  const presentationTitle = <HTMLInputElement>document.getElementById('presentation-title');
+
   const fileInput = <HTMLInputElement>document.getElementById('file-input');
   const formEl = <HTMLFormElement>document.getElementById('upload-form');
 
@@ -20,49 +23,71 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const setSpinnerHidden = setHidden(document.getElementById('upload-spinner'));
 
-  const setRoomHidden = setHidden(roomName.parentElement);
-  const setSpeakerHidden = setHidden(speakerName.parentElement);
-  const setTalkHidden = setHidden(talkTitle.parentElement);
+  const setPresenterNameHidden = setHidden(presenterInput.parentElement);
+  const setPresentationTitleHidden = setHidden(presentationTitle.parentElement);
+
   const setFileHidden = setHidden(fileInput.parentElement);
   const setSubmitHidden = setHidden(<HTMLInputElement>document.getElementById('submit-button'));
   const setFormBeingProcessed: SetHidden = (hidden: boolean) => {
-    [setRoomHidden, setSpeakerHidden, setTalkHidden, setFileHidden, setSubmitHidden].forEach((setElHidden) =>
+    [setPresenterNameHidden, setPresentationTitleHidden, setFileHidden, setSubmitHidden].forEach((setElHidden) =>
       setElHidden(hidden),
     );
   };
 
-  const uploadFiles = createUploadFiles(progressBar, setFormBeingProcessed, showAlert, setSpinnerHidden);
+  setFormBeingProcessed(true);
+  setSpinnerHidden(false);
 
-  fileInput.addEventListener('change', () => {
-    if (fileInput.files.length > 0) {
-      fileInput.parentElement.querySelector('label').textContent = fileInput.files[0].name;
-    }
-  });
+  try {
+    const presenter = new URLSearchParams(window.location.search).get('presenter');
+    const portalDetails = await getPortalDetails(presenter);
+    presenterInput.value = portalDetails.name;
 
-  const submitForm = async (): Promise<void> => {
-    if (formEl.checkValidity() === false) {
-      formEl.classList.add('was-validated');
-      return;
-    }
+    const uploadFiles = createUploadFile(
+      progressBar,
+      setFormBeingProcessed,
+      showAlert,
+      setSpinnerHidden,
+      portalDetails.token,
+    );
 
-    setFormBeingProcessed(true);
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        fileInput.parentElement.querySelector('label').textContent = fileInput.files[0].name;
+      }
+    });
 
-    const roomNameTrimmed = roomName.value.trim();
-    const speakerNameTrimmed = speakerName.value.trim();
-    const talkTitleTrimmed = talkTitle.value.trim();
-    const file = fileInput.files[0];
+    const submitForm = async (): Promise<void> => {
+      if (formEl.checkValidity() === false) {
+        formEl.classList.add('was-validated');
+        return;
+      }
 
-    await uploadFiles(file, roomNameTrimmed, speakerNameTrimmed, talkTitleTrimmed);
-  };
+      setFormBeingProcessed(true);
 
-  formEl.addEventListener(
-    'submit',
-    (event) => {
-      event.preventDefault();
-      event.stopPropagation();
+      const file = fileInput.files[0];
 
-      void submitForm();
-    },
-    false,
-  );
+      await uploadFiles(file, presentationTitle.value);
+    };
+
+    formEl.addEventListener(
+      'submit',
+      (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        void submitForm();
+      },
+      false,
+    );
+
+    setFormBeingProcessed(false);
+    setSpinnerHidden(true);
+  } catch (error) {
+    showAlert((error as Error).message, 'danger');
+    setSpinnerHidden(true);
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  void setup();
 });
